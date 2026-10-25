@@ -1,0 +1,29 @@
+{
+  "name": "opsflow",
+  "version": "1.0.0",
+  "description": "OpsFlow: Full-Stack Incident Response & Reliability Platform",
+  "main": "server/src/server.js",
+  "scripts": {
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\"",
+    "start": "cd server && npm start",
+    "seed": "cd server && npm run seed",
+    "build": "cd client && npm run build"
+  },
+  "keywords": [
+    "incident-management",
+    "sre",
+    "devops",
+    "statuspage",
+    "realtime",
+    "socketio",
+    "mern"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
