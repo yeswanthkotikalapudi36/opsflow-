@@ -9,8 +9,47 @@ const getApiBaseUrl = () => {
 };
 const BASE_URL = getApiBaseUrl();
 
+// Thread-safe demo authentication helper to guarantee a valid JWT is always available
+let autoLoginPromise = null;
+
+export async function ensureAuthToken() {
+  const existing = localStorage.getItem('opsflow_token');
+  if (existing) return existing;
+
+  if (!autoLoginPromise) {
+    autoLoginPromise = (async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: 'alex@opsflow.internal',
+            password: 'password123',
+          }),
+        });
+        const data = await response.json();
+        if (data.token) {
+          localStorage.setItem('opsflow_token', data.token);
+          return data.token;
+        }
+      } catch (err) {
+        console.error('[API] Auto-login error:', err);
+      } finally {
+        autoLoginPromise = null;
+      }
+      return null;
+    })();
+  }
+  return autoLoginPromise;
+}
+
 async function request(endpoint, options = {}) {
-  const token = localStorage.getItem('opsflow_token');
+  // Ensure we have a valid token for all protected API calls
+  let token = localStorage.getItem('opsflow_token');
+  if (!token && !endpoint.startsWith('/auth/login') && !endpoint.startsWith('/auth/register')) {
+    token = await ensureAuthToken();
+  }
+
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
@@ -29,7 +68,22 @@ async function request(endpoint, options = {}) {
     config.body = JSON.stringify(options.body);
   }
 
-  const response = await fetch(`${BASE_URL}${endpoint}`, config);
+  let response = await fetch(`${BASE_URL}${endpoint}`, config);
+
+  // If 401 received (e.g. stale/expired token), clear token, re-authenticate, and retry once
+  if (response.status === 401 && !endpoint.startsWith('/auth/login')) {
+    console.warn('[API] 401 Unauthorized encountered. Re-authenticating demo session...');
+    localStorage.removeItem('opsflow_token');
+    const freshToken = await ensureAuthToken();
+    if (freshToken) {
+      headers['Authorization'] = `Bearer ${freshToken}`;
+      response = await fetch(`${BASE_URL}${endpoint}`, {
+        ...config,
+        headers,
+      });
+    }
+  }
+
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {

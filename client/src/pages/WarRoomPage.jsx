@@ -205,10 +205,19 @@ export default function WarRoomPage({ incidentId, onBack }) {
   // Assign self as Incident Commander
   const handleClaimCommander = async () => {
     try {
-      const res = await api.incidents.assignRole(incident._id, user._id, 'commander');
+      let targetUserId = user?._id;
+      if (!targetUserId) {
+        const me = await api.auth.getMe();
+        targetUserId = me?.user?._id;
+      }
+      if (!targetUserId) {
+        alert('Please select an active responder identity first.');
+        return;
+      }
+      const res = await api.incidents.assignRole(incident._id, targetUserId, 'commander');
       setIncident(res.incident);
     } catch (err) {
-      alert('Failed to assign commander');
+      alert(err.message || 'Failed to assign commander');
     }
   };
 

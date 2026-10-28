@@ -280,6 +280,9 @@ exports.assignRole = async (req, res) => {
       incident.commanderName = targetUser.name;
     }
 
+    // Ensure responders array exists
+    incident.responders = Array.isArray(incident.responders) ? incident.responders : [];
+
     // Check if user already in responders
     const existingIndex = incident.responders.findIndex((r) => String(r.userId) === String(targetUser._id));
     if (existingIndex !== -1) {

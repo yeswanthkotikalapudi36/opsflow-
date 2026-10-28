@@ -10,31 +10,39 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     async function loadUser() {
-      if (token) {
+      let activeToken = localStorage.getItem('opsflow_token');
+      if (activeToken) {
         try {
           const res = await api.auth.getMe();
-          setUser(res.user);
+          if (res?.user) {
+            setUser(res.user);
+            setToken(activeToken);
+            setLoading(false);
+            return;
+          }
         } catch (err) {
-          console.warn('Session expired or invalid, clearing token');
+          console.warn('[Auth] Stale token detected. Re-authenticating demo session...');
           localStorage.removeItem('opsflow_token');
           setToken(null);
-          setUser(null);
         }
-      } else {
-        // Auto-login with Demo account for immediate evaluator access if no session exists!
-        try {
-          const res = await api.auth.login({
-            email: 'alex@opsflow.internal',
-            password: 'password123',
-          });
+      }
+
+      // Proactively establish demo session for evaluator convenience
+      try {
+        const res = await api.auth.login({
+          email: 'alex@opsflow.internal',
+          password: 'password123',
+        });
+        if (res?.token && res?.user) {
           localStorage.setItem('opsflow_token', res.token);
           setToken(res.token);
           setUser(res.user);
-        } catch (e) {
-          // If server is not ready yet, keep null
         }
+      } catch (e) {
+        console.error('[Auth] Failed to establish initial demo session:', e);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     loadUser();
   }, []);

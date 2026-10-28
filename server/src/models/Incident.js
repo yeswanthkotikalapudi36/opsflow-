@@ -99,7 +99,7 @@ const incidentSchema = new mongoose.Schema({
     default: 'TRIGGERED',
   },
   serviceId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.Mixed,
     ref: 'Service',
   },
   serviceName: {
@@ -123,7 +123,7 @@ const incidentSchema = new mongoose.Schema({
     default: 1,
   },
   commanderId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.Mixed,
     ref: 'User',
   },
   commanderName: {
@@ -132,7 +132,7 @@ const incidentSchema = new mongoose.Schema({
   },
   responders: [
     {
-      userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      userId: { type: mongoose.Schema.Types.Mixed, ref: 'User' },
       name: { type: String },
       role: { type: String, default: 'Responder' },
       joinedAt: { type: Date, default: Date.now },
