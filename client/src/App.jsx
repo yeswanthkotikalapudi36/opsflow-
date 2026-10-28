@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider, useSocket } from './context/SocketContext';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
@@ -14,11 +14,51 @@ import WebhookSimulatorModal from './components/WebhookSimulatorModal';
 import { api } from './services/api';
 
 function AppContent() {
+  const { loading } = useAuth();
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [activeWarRoomId, setActiveWarRoomId] = useState(null);
   const [isDeclareOpen, setIsDeclareOpen] = useState(false);
   const [isWebhookSimOpen, setIsWebhookSimOpen] = useState(false);
   const [activeIncidentsCount, setActiveIncidentsCount] = useState(0);
+
+  // Show a full-screen loader while auth session is being restored
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'var(--bg-dark)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '20px',
+      }}>
+        <div style={{
+          width: '48px',
+          height: '48px',
+          borderRadius: '14px',
+          background: 'linear-gradient(135deg, #0284c7 0%, #6366f1 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 0 30px rgba(56, 189, 248, 0.5)',
+          animation: 'pulse 1.5s ease-in-out infinite',
+        }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+          </svg>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
+            Ops<span style={{ color: 'var(--brand-primary)' }}>Flow</span>
+          </div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '6px' }}>
+            Connecting to MongoDB Atlas...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const fetchActiveCount = async () => {
     try {

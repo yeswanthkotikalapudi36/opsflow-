@@ -9,7 +9,7 @@ async function connectDB() {
     console.log(`[DB] Attempting connection to MongoDB at: ${config.mongoUri}`);
     // Set 2.5 second timeout so server doesn't hang if local mongod is not running
     await mongoose.connect(config.mongoUri, {
-      serverSelectionTimeoutMS: 2500,
+      serverSelectionTimeoutMS: 10000,
     });
     isConnected = true;
     dbMode = 'mongo';
