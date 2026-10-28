@@ -53,7 +53,8 @@ export default function ServicesPage() {
   }, [socket]);
 
   const handleCopyWebhookUrl = (serviceKey) => {
-    const url = `http://localhost:5001/api/webhooks/ingest/${serviceKey}`;
+    const backendBase = import.meta.env.PROD ? 'https://opsflow-1-xd2t.onrender.com' : 'http://localhost:5001';
+    const url = `${backendBase}/api/webhooks/ingest/${serviceKey}`;
     navigator.clipboard.writeText(url);
     setCopiedKey(serviceKey);
     setTimeout(() => setCopiedKey(null), 2000);

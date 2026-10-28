@@ -21,6 +21,41 @@ function AppContent() {
   const [isWebhookSimOpen, setIsWebhookSimOpen] = useState(false);
   const [activeIncidentsCount, setActiveIncidentsCount] = useState(0);
 
+  const fetchActiveCount = async () => {
+    try {
+      const res = await api.incidents.getAll({ status: 'ACTIVE' });
+      setActiveIncidentsCount(res.incidents?.length || 0);
+    } catch (e) {
+      // Ignore
+    }
+  };
+
+  // Rule of Hooks: ALL hooks MUST be called unconditionally at the top level
+  // before ANY conditional returns (e.g. if (loading) return ...)
+  useEffect(() => {
+    if (!loading) {
+      fetchActiveCount();
+    }
+  }, [currentTab, loading]);
+
+  const handleNavigate = (tab) => {
+    if (tab.startsWith('war-room-')) {
+      const id = tab.replace('war-room-', '');
+      setActiveWarRoomId(id);
+      setCurrentTab('war-room');
+    } else {
+      setActiveWarRoomId(null);
+      setCurrentTab(tab);
+    }
+  };
+
+  const handleIncidentCreated = (newInc) => {
+    fetchActiveCount();
+    if (newInc?._id) {
+      handleNavigate(`war-room-${newInc._id}`);
+    }
+  };
+
   // Show a full-screen loader while auth session is being restored
   if (loading) {
     return (
@@ -53,43 +88,12 @@ function AppContent() {
             Ops<span style={{ color: 'var(--brand-primary)' }}>Flow</span>
           </div>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '6px' }}>
-            Connecting to MongoDB Atlas...
+            Connecting to OpsFlow Engine...
           </div>
         </div>
       </div>
     );
   }
-
-  const fetchActiveCount = async () => {
-    try {
-      const res = await api.incidents.getAll({ status: 'ACTIVE' });
-      setActiveIncidentsCount(res.incidents?.length || 0);
-    } catch (e) {
-      // Ignore
-    }
-  };
-
-  useEffect(() => {
-    fetchActiveCount();
-  }, [currentTab]);
-
-  const handleNavigate = (tab) => {
-    if (tab.startsWith('war-room-')) {
-      const id = tab.replace('war-room-', '');
-      setActiveWarRoomId(id);
-      setCurrentTab('war-room');
-    } else {
-      setActiveWarRoomId(null);
-      setCurrentTab(tab);
-    }
-  };
-
-  const handleIncidentCreated = (newInc) => {
-    fetchActiveCount();
-    if (newInc?._id) {
-      handleNavigate(`war-room-${newInc._id}`);
-    }
-  };
 
   // If in public status page view
   if (currentTab === 'status-page') {

@@ -11,8 +11,16 @@ export function SocketProvider({ children }) {
 
   useEffect(() => {
     // Connect to backend socket
-    const defaultSocketUrl = import.meta.env.PROD ? 'https://opsflow-1-xd2t.onrender.com' : '/';
-    const serverUrl = import.meta.env.VITE_SOCKET_URL || (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '') : defaultSocketUrl);
+    const getSocketUrl = () => {
+      if (import.meta.env.VITE_SOCKET_URL) {
+        return import.meta.env.VITE_SOCKET_URL.trim().replace(/\/+$/, '');
+      }
+      if (import.meta.env.VITE_API_URL) {
+        return import.meta.env.VITE_API_URL.trim().replace(/\/api\/?$/, '');
+      }
+      return import.meta.env.PROD ? 'https://opsflow-1-xd2t.onrender.com' : '/';
+    };
+    const serverUrl = getSocketUrl();
     const socketInstance = io(serverUrl, {
       transports: ['websocket', 'polling'],
       reconnectionAttempts: 10,

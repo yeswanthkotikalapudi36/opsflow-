@@ -1,6 +1,13 @@
 // Production backend URL deployed on Render
-const PROD_API_URL = 'https://opsflow-1-xd2t.onrender.com/api';
-const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? PROD_API_URL : '/api');
+const getApiBaseUrl = () => {
+  const raw = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://opsflow-1-xd2t.onrender.com/api' : '/api');
+  let clean = raw.trim().replace(/\/+$/, '');
+  if (clean.startsWith('http') && !clean.endsWith('/api')) {
+    clean += '/api';
+  }
+  return clean;
+};
+const BASE_URL = getApiBaseUrl();
 
 async function request(endpoint, options = {}) {
   const token = localStorage.getItem('opsflow_token');

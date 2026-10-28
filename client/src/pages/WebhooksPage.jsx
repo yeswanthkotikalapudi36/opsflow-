@@ -44,7 +44,8 @@ export default function WebhooksPage({ onOpenSimulator }) {
     }
   }, [socket]);
 
-  const curlExample = `curl -X POST http://localhost:5001/api/webhooks/ingest/payment-gateway \\
+  const backendBase = import.meta.env.PROD ? 'https://opsflow-1-xd2t.onrender.com' : 'http://localhost:5001';
+  const curlExample = `curl -X POST ${backendBase}/api/webhooks/ingest/payment-gateway \\
   -H "Content-Type: application/json" \\
   -d '{
     "alerts": [
