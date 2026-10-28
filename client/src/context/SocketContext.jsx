@@ -11,7 +11,8 @@ export function SocketProvider({ children }) {
 
   useEffect(() => {
     // Connect to backend socket
-    const serverUrl = import.meta.env.VITE_SOCKET_URL || (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '') : '/');
+    const defaultSocketUrl = import.meta.env.PROD ? 'https://opsflow-1-xd2t.onrender.com' : '/';
+    const serverUrl = import.meta.env.VITE_SOCKET_URL || (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '') : defaultSocketUrl);
     const socketInstance = io(serverUrl, {
       transports: ['websocket', 'polling'],
       reconnectionAttempts: 10,
